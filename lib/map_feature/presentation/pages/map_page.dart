@@ -21,6 +21,7 @@ class MapPage extends GetView<MapPageController> {
                   options: MapOptions(
                     initialCenter: LatLng(51.5, -0.09),
                     initialZoom: 13,
+                    onTap: (tapPos, point) => controller.onMapTapped(point),
                   ),
                   children: [
                     TileLayer(
@@ -43,18 +44,20 @@ class MapPage extends GetView<MapPageController> {
                             size: 40,
                           ),
                         ),
-                        Marker(
-                          point: controller.startPoint.value,
-                          width: 40,
-                          height: 40,
-                          child: const Icon(Icons.flag, color: Colors.green),
-                        ),
-                        Marker(
-                          point: controller.endPoint.value,
-                          width: 40,
-                          height: 40,
-                          child: const Icon(Icons.flag, color: Colors.blue),
-                        ),
+                        if (controller.startPoint.value != null)
+                          Marker(
+                            point: controller.startPoint.value!,
+                            width: 40,
+                            height: 40,
+                            child: const Icon(Icons.flag, color: Colors.green),
+                          ),
+                        if (controller.endPoint.value != null)
+                          Marker(
+                            point: controller.endPoint.value!,
+                            width: 40,
+                            height: 40,
+                            child: const Icon(Icons.flag, color: Colors.blue),
+                          ),
                       ],
                     ),
                     if (controller.routePoints.isNotEmpty)
@@ -74,14 +77,32 @@ class MapPage extends GetView<MapPageController> {
                 left: 5,
                 top: 10,
                 child: Container(
-                  decoration: BoxDecoration(color: Colors.blue),
-                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                  ),
+                  padding: const EdgeInsets.all(10),
                   child: Row(
                     children: [
                       GestureDetector(
                         onTap: controller.determinePosition,
                         child: Icon(
                           Icons.gps_fixed_outlined,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: SizedBox(
+                          width: 5,
+                          height: 25,
+                          child: const VerticalDivider(color: Colors.blueGrey),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: controller.startSelectingPoints,
+                        child: const Icon(
+                          Icons.start_outlined,
                           color: Colors.white,
                         ),
                       ),
