@@ -1,124 +1,103 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 
-class MapPage extends StatefulWidget {
-  const MapPage({super.key});
+import '../manager/map_page_controller.dart';
 
-  @override
-  State<MapPage> createState() => _MapPageState();
-}
-
-class _MapPageState extends State<MapPage> {
-  late final MapController _mapController;
-  LatLng? _currentLocation;
-
-  @override
-  void initState() {
-    super.initState();
-    _mapController = MapController();
-    _determinePosition(); // Optional: auto fetch on load
-  }
-
-  @override
-  dispose() {
-    super.dispose();
-
-    _mapController.dispose();
-  }
-
-  Future<void> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled
-      return;
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.deniedForever) return;
-
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission != LocationPermission.whileInUse &&
-          permission != LocationPermission.always) {
-        return;
-      }
-    }
-
-    Position position = await Geolocator.getCurrentPosition();
-    LatLng currentLatLng = LatLng(position.latitude, position.longitude);
-
-    setState(() {
-      _currentLocation = currentLatLng;
-    });
-
-    _mapController.move(currentLatLng, 15); // Zoom into current location
-  }
+class MapPage extends GetView<MapPageController> {
+  MapPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [_map(), _locationAndShare(context)]);
-  }
-
-  Widget _locationAndShare(BuildContext context) {
-    return Positioned(
-      left: 5,
-      top: 10,
-      child: Padding(
-        padding: const EdgeInsets.all(2.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Row(
-              children: [
-                Icon(Icons.share),
-                VerticalDivider(),
-                GestureDetector(
-                  onTap: _determinePosition,
-                  child: Icon(
-                    Icons.gps_fixed_outlined,
-                    color: Theme.of(context).colorScheme.primaryFixed,
+    return Center(
+      child: Scaffold(
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Obx(
+                () => FlutterMap(
+                  mapController: controller.mapController,
+                  options: MapOptions(
+                    initialCenter: LatLng(51.5, -0.09),
+                    initialZoom: 13,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                      subdomains: const ['a', 'b', 'c'],
+                      userAgentPackageName: 'com.example.map_sample_app',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          width: 80,
+                          height: 80,
+                          point:
+                              controller.currentLocation.value ??
+                              LatLng(51.5, -0.09),
+                          child: const Icon(
+                            Icons.location_pin,
+                            color: Colors.red,
+                            size: 40,
+                          ),
+                        ),
+                        Marker(
+                          point: controller.startPoint.value,
+                          width: 40,
+                          height: 40,
+                          child: const Icon(Icons.flag, color: Colors.green),
+                        ),
+                        Marker(
+                          point: controller.endPoint.value,
+                          width: 40,
+                          height: 40,
+                          child: const Icon(Icons.flag, color: Colors.blue),
+                        ),
+                      ],
+                    ),
+                    if (controller.routePoints.isNotEmpty)
+                      PolylineLayer(
+                        polylines: [
+                          Polyline(
+                            points: controller.routePoints,
+                            strokeWidth: 4,
+                            color: Colors.blue,
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+              Positioned(
+                left: 5,
+                top: 10,
+                child: Container(
+                  decoration: BoxDecoration(color: Colors.blue),
+                  padding: const EdgeInsets.all(5),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: controller.determinePosition,
+                        child: Icon(
+                          Icons.gps_fixed_outlined,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      ),
-    );
-  }
-
-  FlutterMap _map() {
-    return FlutterMap(
-      mapController: _mapController,
-      options: MapOptions(
-        initialCenter: LatLng(51.5, -0.09),
-        initialZoom: 13.0,
-      ),
-      children: [
-        TileLayer(
-          urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          subdomains: ['a', 'b', 'c'],
-          userAgentPackageName: 'com.example.map_sample_app',
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.blue,
+          onPressed: controller.getRoute,
+          child: const Icon(Icons.alt_route, color: Colors.white),
         ),
-        MarkerLayer(
-          markers: [
-            Marker(
-              width: 80.0,
-              height: 80.0,
-              point: _currentLocation ?? LatLng(51.5, -0.09),
-              child: Icon(Icons.location_pin, color: Colors.red, size: 40),
-            ),
-          ],
-        ),
-      ],
+      ),
     );
   }
 }

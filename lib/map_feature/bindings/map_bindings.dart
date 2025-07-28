@@ -1,9 +1,10 @@
 import 'package:get/get.dart';
+import 'package:map_sample/map_feature/presentation/manager/map_page_controller.dart';
 
 class MapBindings extends Bindings {
   @override
   void dependencies() {
-    //     Get.lazyPut(() => NetworkInfoImpl(Connectivity()));
+    Get.lazyPut(() => MapPageController());
     //     Get.lazyPut(() => AddEducationController(
     //           addEducationUseCase: Get.find<AddEducationUseCase>(),
     //           getDegreesUseCase: Get.find<GetDegreesUseCase>(),

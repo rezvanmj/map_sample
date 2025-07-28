@@ -1,0 +1,58 @@
+import 'dart:convert';
+
+import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
+
+class MapPageController extends GetxController {
+  final mapController = MapController();
+
+  var currentLocation = Rxn<LatLng>();
+  var startPoint = LatLng(35.6892, 51.3890).obs;
+  var endPoint = LatLng(35.7153, 51.4043).obs;
+  var routePoints = <LatLng>[].obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    determinePosition();
+  }
+
+  Future<void> determinePosition() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return;
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission != LocationPermission.whileInUse &&
+          permission != LocationPermission.always) {
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) return;
+
+    Position position = await Geolocator.getCurrentPosition();
+    final currentLatLng = LatLng(position.latitude, position.longitude);
+
+    currentLocation.value = currentLatLng;
+    mapController.move(currentLatLng, 15);
+  }
+
+  Future<void> getRoute() async {
+    final url =
+        'https://router.project-osrm.org/route/v1/driving/${startPoint.value.longitude},${startPoint.value.latitude};${endPoint.value.longitude},${endPoint.value.latitude}?overview=full&geometries=geojson';
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final coords = data['routes'][0]['geometry']['coordinates'] as List;
+      routePoints.value = coords
+          .map((c) => LatLng(c[1].toDouble(), c[0].toDouble()))
+          .toList();
+    }
+  }
+}
