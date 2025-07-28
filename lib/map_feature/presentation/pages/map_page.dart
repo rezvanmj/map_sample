@@ -13,7 +13,7 @@ class MapPage extends GetView<MapPageController> {
     return Center(
       child: Scaffold(
         body: SafeArea(
-          child: Stack(children: [_map(), _switchs(), _distance()]),
+          child: Stack(children: [_map(), _switchs(), _distance(context)]),
         ),
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.blue,
@@ -24,20 +24,56 @@ class MapPage extends GetView<MapPageController> {
     );
   }
 
-  Obx _distance() {
+  Obx _distance(BuildContext context) {
     return Obx(() {
       final distance = controller.getDistanceInKm();
-      return distance != null
-          ? Positioned(
-              bottom: 20,
-              left: 20,
-              child: Container(
-                padding: const EdgeInsets.all(8),
+      if (distance == null) return const SizedBox.shrink();
+
+      return Positioned(
+        bottom: 40,
+        left: 20,
+        right: 20,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
                 color: Colors.white,
-                child: Text('Distance: ${distance.toStringAsFixed(2)} km'),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
               ),
-            )
-          : const SizedBox.shrink();
+              child: Text(
+                'فاصله تقریبی: ${distance.toStringAsFixed(2)} کیلومتر',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: Get.context ?? context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('درخواست سفر'),
+                    content: const Text('سفر با موفقیت پذیرفته شد'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('باشه'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: const Text('درخواست سفر'),
+            ),
+          ],
+        ),
+      );
     });
   }
 
