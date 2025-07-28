@@ -16,11 +16,20 @@ class MapPageController extends GetxController {
   var endPoint = Rxn<LatLng>();
   var routePoints = <LatLng>[].obs;
   var selectMode = SelectMode.none.obs;
-
+  final Distance _distance = Distance();
   @override
   void onInit() {
     super.onInit();
     determinePosition();
+  }
+
+  double? getDistanceInKm() {
+    if (startPoint.value == null || endPoint.value == null) return null;
+    return _distance.as(
+      LengthUnit.Kilometer,
+      startPoint.value!,
+      endPoint.value!,
+    );
   }
 
   void startSelectingPoints() {
