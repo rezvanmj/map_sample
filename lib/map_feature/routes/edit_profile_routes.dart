@@ -5,7 +5,7 @@ import 'package:get/get_navigation/src/routes/transitions_type.dart';
 import '../bindings/map_bindings.dart';
 import '../presentation/pages/map_page.dart';
 
-List<GetPage> MapRoutes = [
+List<GetPage> mapRoutes = [
   GetPage(
     name: '/map',
     page: () => MapPage(),

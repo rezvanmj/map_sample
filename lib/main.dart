@@ -11,17 +11,14 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Map sample',
-
       initialRoute: '/map',
       initialBinding: MapBindings(),
-      getPages: MapRoutes,
-      // home: WelcomePage(),
+      getPages: mapRoutes,
     );
   }
 }
