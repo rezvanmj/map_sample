@@ -10,17 +10,67 @@ class MapPage extends GetView<MapPageController> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Scaffold(
-        body: SafeArea(
-          child: Stack(children: [_map(), _switches(), _distance(context)]),
-        ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.blue,
-          onPressed: controller.getRoute,
-          child: const Icon(Icons.alt_route, color: Colors.white),
+    return Obx(
+      () => Center(
+        child: Scaffold(
+          body: SafeArea(
+            child: Stack(
+              children: [
+                _map(),
+                Positioned(
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
+                  child:
+                      (controller.endPoint.value != null &&
+                          controller.startPoint.value != null)
+                      ? _distance(context)
+                      : _selectLocationButton(),
+                ),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: FloatingActionButton(
+                      mini: true,
+                      backgroundColor: Colors.lightGreen,
+                      onPressed: controller.determinePosition,
+                      child: const Icon(
+                        Icons.gps_fixed_outlined,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // floatingActionButton:,
         ),
       ),
+    );
+  }
+
+  FilledButton _selectLocationButton() {
+    return FilledButton(
+      style: FilledButton.styleFrom(
+        backgroundColor: Colors.green,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+      onPressed: () {
+        if (controller.startPoint.value == null &&
+            controller.endPoint.value == null) {
+          controller.startSelectingPoints();
+        } else {}
+      },
+      child: controller.startPoint.value == null
+          ? Text('انتخاب مبدا')
+          : (controller.endPoint.value == null &&
+                controller.startPoint.value != null)
+          ? Text('انتخاب مقصد')
+          : SizedBox(),
     );
   }
 
@@ -29,86 +79,64 @@ class MapPage extends GetView<MapPageController> {
       final distance = controller.getDistanceInKm();
       if (distance == null) return const SizedBox.shrink();
 
-      return Positioned(
-        bottom: 40,
-        left: 20,
-        right: 20,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
-              ),
-              child: Text(
-                'فاصله تقریبی: ${distance.toStringAsFixed(2)} کیلومتر',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+            ),
+            child: Text(
+              'فاصله تقریبی: ${distance.toStringAsFixed(2)} کیلومتر',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: Get.context ?? context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('درخواست سفر'),
+                        content: const Text('سفر با موفقیت پذیرفته شد'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              controller.startSelectingPoints();
+                            },
+                            child: const Text('باشه'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: const Text('درخواست سفر'),
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                showDialog(
-                  context: Get.context ?? context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('درخواست سفر'),
-                    content: const Text('سفر با موفقیت پذیرفته شد'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('باشه'),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              child: const Text('درخواست سفر'),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       );
     });
-  }
-
-  Positioned _switches() {
-    return Positioned(
-      left: 5,
-      top: 10,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.blue,
-          borderRadius: BorderRadius.all(Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.all(10),
-        child: Row(
-          children: [
-            GestureDetector(
-              onTap: controller.determinePosition,
-              child: Icon(Icons.gps_fixed_outlined, color: Colors.white),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: SizedBox(
-                width: 5,
-                height: 25,
-                child: const VerticalDivider(color: Colors.blueGrey),
-              ),
-            ),
-            GestureDetector(
-              onTap: controller.startSelectingPoints,
-              child: const Icon(Icons.start_outlined, color: Colors.white),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Obx _map() {
