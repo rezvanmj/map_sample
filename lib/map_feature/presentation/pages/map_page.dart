@@ -6,7 +6,7 @@ import 'package:latlong2/latlong.dart';
 import '../manager/map_page_controller.dart';
 
 class MapPage extends GetView<MapPageController> {
-  MapPage({super.key});
+  const MapPage({super.key});
 
   @override
   Widget build(BuildContext context) {

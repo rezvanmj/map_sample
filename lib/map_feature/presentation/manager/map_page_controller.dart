@@ -80,8 +80,8 @@ class MapPageController extends GetxController {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final coords = data['routes'][0]['geometry']['coordinates'] as List;
-        routePoints.value = coords
+        final cords = data['routes'][0]['geometry']['coordinates'] as List;
+        routePoints.value = cords
             .map((c) => LatLng(c[1].toDouble(), c[0].toDouble()))
             .toList();
       }
