@@ -13,7 +13,7 @@ class MapPage extends GetView<MapPageController> {
     return Center(
       child: Scaffold(
         body: SafeArea(
-          child: Stack(children: [_map(), _switchs(), _distance(context)]),
+          child: Stack(children: [_map(), _switches(), _distance(context)]),
         ),
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.blue,
@@ -77,7 +77,7 @@ class MapPage extends GetView<MapPageController> {
     });
   }
 
-  Positioned _switchs() {
+  Positioned _switches() {
     return Positioned(
       left: 5,
       top: 10,

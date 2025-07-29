@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:map_sample/map_feature/bindings/map_bindings.dart';
 
-import 'map_feature/routes/edit_profile_routes.dart';
+import 'map_feature/routes/map_routes.dart';
 
 void main() {
   runApp(const MyApp());
